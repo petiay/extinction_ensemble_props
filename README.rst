@@ -32,3 +32,8 @@ These tables should have at least A(V), E(B-V), and R(V) values.
 
 Where needed, code is provided to convert the original data tables to a common
 format for this repository (e.g., `data/process_valencic04.py`).
+
+Plots
+-----
+
+plot_fm90_params: plot FM90 parameters versus E(B-V), A(V), or E(B-V)
