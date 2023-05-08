@@ -1,0 +1,8 @@
+|   EBV|    RV|                 AV|    C1|    C2|    C3|    C4|        x0|     gamma|
+|double|double|             double|double|double|double|double|    double|    double|
+|   mag|      |                mag|      |      |      |      |1 / micron|1 / micron|
+|  null|  null|               null|  null|  null|  null|  null|      null|      null|
+  0.284   4.65               1.319 -1.968  1.429  1.628  0.197      4.650      0.618
+  0.348   3.41               1.187 -0.469  0.901  2.413  0.012      4.633      0.927
+  0.336   3.67               1.235  0.414  0.590  1.863  0.251      4.551      1.145
+  0.314   3.33               1.045 -1.071  1.113  2.162  0.011      4.649      0.891

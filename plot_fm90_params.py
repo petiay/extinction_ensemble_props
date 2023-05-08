@@ -9,12 +9,13 @@ if __name__ == "__main__":
         help="give the datasets to plot",
         nargs="+",
         default=["val04", "gor03_smc", "gor03_lmc"],
-        choices=["val04", "gor03_smc", "gor03_lmc", "gor24_smc", "gor24_smc_forecor"],
+        choices=["val04", "gor03_smc", "gor03_lmc", "gor24_smc", "gor24_smc_forecor", "m31", "m33"],
     )
     parser.add_argument("--av", help="plot versus A(V)", action="store_true")
     parser.add_argument("--rv", help="plot versus R(V)", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
+    parser.add_argument("--limx", help="limit x-axis", action="store_true")
     args = parser.parse_args()
 
     # get the data to plot
@@ -45,7 +46,9 @@ if __name__ == "__main__":
               "gor03_smc": ("bv", 0.5),
               "gor03_lmc": ("c^", 0.5),
               "gor24_smc": ("r>", 0.2),
-              "gor24_smc_forecor": ("g<", 0.5)}
+              "gor24_smc_forecor": ("g<", 0.5),
+              "m31": ("mo", 0.8),
+              "m33": ("yo", 0.9)}
 
     for cname, cdata in zip(allnames, alldata):
         if args.rv:
@@ -67,6 +70,8 @@ if __name__ == "__main__":
         px, py = divmod(pi[i], 3)
         ax[px, py].set_xlabel(xlabel, fontsize=1.3 * fontsize)
         ax[px, py].set_ylabel(plabels[i], fontsize=1.3 * fontsize)
+        if args.limx and not (args.rv or args.av):
+            ax[px, py].set_xlim(0.1, 0.8)
 
     ax[0, 1].legend()
 

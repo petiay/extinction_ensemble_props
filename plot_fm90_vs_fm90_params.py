@@ -9,7 +9,7 @@ if __name__ == "__main__":
         help="give the datasets to plot",
         nargs="+",
         default=["val04", "gor03_smc", "gor03_lmc"],
-        choices=["val04", "gor03_smc", "gor03_lmc", "gor24_smc", "gor24_smc_forecor"],
+        choices=["val04", "gor03_smc", "gor03_lmc", "gor24_smc", "gor24_smc_forecor", "m31", "m33"],
     )
     parser.add_argument("--av", help="plot versus A(V)", action="store_true")
     parser.add_argument("--rv", help="plot versus R(V)", action="store_true")
@@ -48,6 +48,8 @@ if __name__ == "__main__":
         "gor03_lmc": ("c^", 0.5),
         "gor24_smc": ("r>", 0.2),
         "gor24_smc_forecor": ("g<", 0.5),
+        "m31": ("mo", 0.8),
+        "m33": ("yo", 0.9)
     }
 
     for cname, cdata in zip(allnames, alldata):
