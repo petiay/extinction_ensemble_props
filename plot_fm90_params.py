@@ -13,6 +13,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--av", help="plot versus A(V)", action="store_true")
     parser.add_argument("--rv", help="plot versus R(V)", action="store_true")
+    parser.add_argument(
+        "--paper", help="portrait format for papers", action="store_true"
+    )
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -37,15 +40,24 @@ if __name__ == "__main__":
     plt.rc("xtick.major", width=2)
     plt.rc("ytick.major", width=2)
 
-    fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(18, 10))
+    if args.paper:
+        fsize = (12, 14)
+        nrows = 3
+        ncols = 2
+        pi = [0, 1, 2, 3, 4, 5]
+    else:
+        fsize = (18, 10)
+        nrows = 2
+        ncols = 3
+        pi = [0, 1, 3, 4, 2, 5]
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
 
-    plabels = ["$C_1$", "$C_2$", "$B_3$", "$C_4$", "$x_o$", r"$\gamma$"]
+    plabels = ["$C_1$", "$C_2$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$"]
     ptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
-    pi = [0, 1, 4, 3, 2, 5]
 
     # plot types, colors and alphas
     ptypes = {
-        "val04": ("ko", 0.25),
+        "val04": ("k.", 0.25),
         "gor03_smc": ("bv", 0.5),
         "gor03_lmc": ("c^", 0.5),
         "gor24_smc": ("r>", 0.2),
@@ -56,29 +68,29 @@ if __name__ == "__main__":
         xdata_unc = None
         if args.rv:
             xdata = cdata["RV"]
-            if f"RV_unc" in tdata.colnames:
+            if f"RV_unc" in cdata.colnames:
                 xdata_unc = cdata["RV_unc"]
             xlabel = "$R(V)$"
         elif args.av:
             xdata = cdata["AV"]
-            if f"AV_unc" in tdata.colnames:
+            if f"AV_unc" in cdata.colnames:
                 xdata_unc = cdata["AV_unc"]
             xlabel = "$A(V)$"
         else:
             xdata = cdata["EBV"]
-            if f"EBV_unc" in tdata.colnames:
+            if f"EBV_unc" in cdata.colnames:
                 xdata_unc = cdata["EBV_unc"]
             xlabel = "$E(B-V)$"
 
         ptype, palpha = ptypes[cname]
         for i in range(6):
             # check if uncertainties are included
-            if f"{ptags[i]}_unc" in tdata.colnames:
+            if f"{ptags[i]}_unc" in cdata.colnames:
                 ydata_unc = cdata[f"{ptags[i]}_unc"]
             else:
                 ydata_unc = None
 
-            px, py = divmod(pi[i], 3)
+            px, py = divmod(pi[i], ncols)
             ax[px, py].errorbar(
                 xdata,
                 cdata[ptags[i]],
@@ -90,7 +102,7 @@ if __name__ == "__main__":
             )
 
     for i in range(6):
-        px, py = divmod(pi[i], 3)
+        px, py = divmod(pi[i], ncols)
         ax[px, py].set_xlabel(xlabel, fontsize=1.3 * fontsize)
         ax[px, py].set_ylabel(plabels[i], fontsize=1.3 * fontsize)
 
