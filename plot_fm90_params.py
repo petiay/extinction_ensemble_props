@@ -23,7 +23,10 @@ if __name__ == "__main__":
     for cset in args.datasets:
         fname = f"data/{cset}_ensemble_params.dat"
         allnames.append(cset)
-        alldata.append(QTable.read(fname, format="ascii.ipac"))
+        tdata = QTable.read(fname, format="ascii.ipac")
+        if "B3" not in tdata.colnames:
+            tdata["B3"] = tdata["C3"] / (tdata["gamma"]**2)
+        alldata.append(tdata)
 
     # make the plots
     fontsize = 14
@@ -36,8 +39,8 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(18, 10))
 
-    plabels = ["$C_1$", "$C_2$", "$C_3$", "$C_4$", "$x_o$", r"$\gamma$"]
-    ptags = ["C1", "C2", "C3", "C4", "x0", "gamma"]
+    plabels = ["$C_1$", "$C_2$", "$B_3$", "$C_4$", "$x_o$", r"$\gamma$"]
+    ptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
     pi = [0, 1, 4, 3, 2, 5]
 
     # plot types, colors and alphas
