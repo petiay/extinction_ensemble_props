@@ -53,20 +53,41 @@ if __name__ == "__main__":
     }
 
     for cname, cdata in zip(allnames, alldata):
+        xdata_unc = None
         if args.rv:
             xdata = cdata["RV"]
+            if f"RV_unc" in tdata.colnames:
+                xdata_unc = cdata["RV_unc"]
             xlabel = "$R(V)$"
         elif args.av:
             xdata = cdata["AV"]
+            if f"AV_unc" in tdata.colnames:
+                xdata_unc = cdata["AV_unc"]
             xlabel = "$A(V)$"
         else:
             xdata = cdata["EBV"]
+            if f"EBV_unc" in tdata.colnames:
+                xdata_unc = cdata["EBV_unc"]
             xlabel = "$E(B-V)$"
 
         ptype, palpha = ptypes[cname]
         for i in range(6):
+            # check if uncertainties are included
+            if f"{ptags[i]}_unc" in tdata.colnames:
+                ydata_unc = cdata[f"{ptags[i]}_unc"]
+            else:
+                ydata_unc = None
+
             px, py = divmod(pi[i], 3)
-            ax[px, py].plot(xdata, cdata[ptags[i]], ptype, label=cname, alpha=palpha)
+            ax[px, py].errorbar(
+                xdata,
+                cdata[ptags[i]],
+                xerr=xdata_unc,
+                yerr=ydata_unc,
+                fmt=ptype,
+                label=cname,
+                alpha=palpha,
+            )
 
     for i in range(6):
         px, py = divmod(pi[i], 3)

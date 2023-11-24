@@ -39,9 +39,10 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(18, 10))
 
-    plabels = ["$C_1$", "$C_2$", "$B_3$", "$C_4$", "$x_o$", r"$\gamma$"]
-    yptags = ["C1", "B3", "C4", "x0", "gamma", "B3"]
+    xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_4$"]
     xptags = ["C2", "C2", "C2", "C2", "C2", "C4"]
+    yplabels = ["$C_1$", "$B_3$", "$C_4$", "$x_o$", r"$\gamma$", "$B_3$"]
+    yptags = ["C1", "B3", "C4", "x0", "gamma", "B3"]
     pi = [0, 1, 2, 3, 4, 5]
 
     # plot types, colors and alphas
@@ -56,15 +57,31 @@ if __name__ == "__main__":
     for cname, cdata in zip(allnames, alldata):
         ptype, palpha = ptypes[cname]
         for i in range(6):
+            # check if uncertainties are included
+            if f"{xptags[i]}_unc" in cdata.colnames:
+                xdata_unc = cdata[f"{xptags[i]}_unc"]
+            else:
+                xdata_unc = None
+            if f"{yptags[i]}_unc" in cdata.colnames:
+                ydata_unc = cdata[f"{yptags[i]}_unc"]
+            else:
+                ydata_unc = None
+
             px, py = divmod(pi[i], 3)
-            ax[px, py].plot(
-                cdata[xptags[i]], cdata[yptags[i]], ptype, label=cname, alpha=palpha
+            ax[px, py].errorbar(
+                cdata[xptags[i]],
+                cdata[yptags[i]],
+                xerr=xdata_unc,
+                yerr=ydata_unc,
+                fmt=ptype,
+                label=cname,
+                alpha=palpha,
             )
 
     for i in range(6):
         px, py = divmod(pi[i], 3)
-        ax[px, py].set_xlabel(xptags[i], fontsize=1.3 * fontsize)
-        ax[px, py].set_ylabel(yptags[i], fontsize=1.3 * fontsize)
+        ax[px, py].set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
+        ax[px, py].set_ylabel(yplabels[i], fontsize=1.3 * fontsize)
 
     ax[0, 0].legend()
 
