@@ -25,7 +25,7 @@ if __name__ == "__main__":
         allnames.append(cset)
         tdata = QTable.read(fname, format="ascii.ipac")
         if "B3" not in tdata.colnames:
-            tdata["B3"] = tdata["C3"] / (tdata["gamma"]**2)
+            tdata["B3"] = tdata["C3"] / (tdata["gamma"] ** 2)
         alldata.append(tdata)
 
     # make the plots
@@ -54,7 +54,6 @@ if __name__ == "__main__":
     }
 
     for cname, cdata in zip(allnames, alldata):
-
         ptype, palpha = ptypes[cname]
         for i in range(6):
             px, py = divmod(pi[i], 3)

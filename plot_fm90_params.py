@@ -25,7 +25,7 @@ if __name__ == "__main__":
         allnames.append(cset)
         tdata = QTable.read(fname, format="ascii.ipac")
         if "B3" not in tdata.colnames:
-            tdata["B3"] = tdata["C3"] / (tdata["gamma"]**2)
+            tdata["B3"] = tdata["C3"] / (tdata["gamma"] ** 2)
         alldata.append(tdata)
 
     # make the plots
@@ -44,11 +44,13 @@ if __name__ == "__main__":
     pi = [0, 1, 4, 3, 2, 5]
 
     # plot types, colors and alphas
-    ptypes = {"val04": ("ko", 0.25),
-              "gor03_smc": ("bv", 0.5),
-              "gor03_lmc": ("c^", 0.5),
-              "gor24_smc": ("r>", 0.2),
-              "gor24_smc_forecor": ("g<", 0.5)}
+    ptypes = {
+        "val04": ("ko", 0.25),
+        "gor03_smc": ("bv", 0.5),
+        "gor03_lmc": ("c^", 0.5),
+        "gor24_smc": ("r>", 0.2),
+        "gor24_smc_forecor": ("g<", 0.5),
+    }
 
     for cname, cdata in zip(allnames, alldata):
         if args.rv:
