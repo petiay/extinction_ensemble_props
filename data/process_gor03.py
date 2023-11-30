@@ -12,38 +12,26 @@ if __name__ == "__main__":
         "Gordon03/gordon03_lmc.dat", format="ascii.commented_header", header_start=0
     )
 
-    # SMC
-    gor03 = gor03_smc
-    otab = QTable()
-    ebv = np.array(gor03["ebv"]) * u.mag
-    otab["EBV"] = ebv
-    rv = np.array(gor03["rv"])
-    otab["RV"] = rv
-    otab["AV"] = ebv * rv
+    for gor03, oname in zip([gor03_smc, gor03_lmc], ["smc", "lmc"]):
+        otab = QTable()
+        otab["EBV"] = gor03["ebv"] * u.mag
+        otab["EBV_unc"] = gor03["ebv_u"] * u.mag
+        otab["RV"] = gor03["rv"]
+        otab["RV_unc"] = gor03["rv_u"]
+        otab["AV"] = otab["EBV"] * otab["RV"]
+        otab["AV_unc"] = otab["AV"] * np.sqrt(otab["EBV_unc"].value**2 + otab["RV_unc"]**2)
 
-    otab["C1"] = np.array(gor03["c1"])
-    otab["C2"] = np.array(gor03["c2"])
-    otab["C3"] = np.array(gor03["c3"])
-    otab["C4"] = np.array(gor03["c4"])
-    otab["x0"] = np.array(gor03["x0"]) / u.micron
-    otab["gamma"] = np.array(gor03["gamma"]) / u.micron
+        otab["C1"] = np.array(gor03["c1"])
+        otab["C1_unc"] = np.array(gor03["c1_u"])
+        otab["C2"] = np.array(gor03["c2"])
+        otab["C2_unc"] = np.array(gor03["c2_u"])
+        otab["C3"] = np.array(gor03["c3"])
+        otab["C3_unc"] = np.array(gor03["c3_u"])
+        otab["C4"] = np.array(gor03["c4"])
+        otab["C4_unc"] = np.array(gor03["c4_u"])
+        otab["x0"] = np.array(gor03["x0"]) / u.micron
+        otab["x0_unc"] = np.array(gor03["x0_u"]) / u.micron
+        otab["gamma"] = np.array(gor03["gamma"]) / u.micron
+        otab["gamma_unc"] = np.array(gor03["gamma_u"]) / u.micron
 
-    otab.write("gor03_smc_ensemble_params.dat", format="ascii.ipac", overwrite=True)
-
-    # LMC
-    gor03 = gor03_lmc
-    otab = QTable()
-    ebv = np.array(gor03["ebv"]) * u.mag
-    otab["EBV"] = ebv
-    rv = np.array(gor03["rv"])
-    otab["RV"] = rv
-    otab["AV"] = ebv * rv
-
-    otab["C1"] = np.array(gor03["c1"])
-    otab["C2"] = np.array(gor03["c2"])
-    otab["C3"] = np.array(gor03["c3"])
-    otab["C4"] = np.array(gor03["c4"])
-    otab["x0"] = np.array(gor03["x0"]) / u.micron
-    otab["gamma"] = np.array(gor03["gamma"]) / u.micron
-
-    otab.write("gor03_lmc_ensemble_params.dat", format="ascii.ipac", overwrite=True)
+        otab.write(f"gor03_{oname}_ensemble_params.dat", format="ascii.ipac", overwrite=True)

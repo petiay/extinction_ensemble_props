@@ -32,7 +32,7 @@ if __name__ == "__main__":
         if "B3" not in tdata.colnames:
             tdata["B3"] = tdata["C3"] / (tdata["gamma"] ** 2)
             if "C3_unc" in tdata.colnames:
-                tdata["B3_unc"] = tdata["B3"] * np.sqrt(tdata["C3_unc"] ** 2 +  2.0 * (tdata["gamma_unc"].value ** 2))
+                tdata["B3_unc"] = np.absolute(tdata["B3"]) * np.sqrt(tdata["C3_unc"] ** 2 +  2.0 * (tdata["gamma_unc"].value ** 2))
         alldata.append(tdata)
 
     # make the plots
