@@ -21,7 +21,7 @@ if __name__ == "__main__":
     otab["RV_unc"] = np.array(tab4["e_R(V)"])
     
     otab["AV"] = otab["EBV"] * otab["RV"]
-    # add in R(V) uncs
+    otab["AV_unc"] = otab["AV"] * np.sqrt(otab["EBV_unc"].value**2 + otab["RV_unc"]**2)
 
     otab["C1"] = np.array(tab4["c1"])
     otab["C1_unc"] = np.array(tab4["e_c1"])
@@ -31,9 +31,9 @@ if __name__ == "__main__":
     otab["C3_unc"] = np.array(tab4["e_c3"])
     otab["C4"] = np.array(tab4["c4"])
     otab["C4_unc"] = np.array(tab4["e_c4"])
-    otab["x0"] = np.array(tab4["x0"])
-    otab["x0_unc"] = np.array(tab4["e_x0"])
-    otab["gamma"] = np.array(tab4["gamma"])
-    otab["gamma_unc"] = np.array(tab4["e_gamma"])
+    otab["x0"] = np.array(tab4["x0"]) / u.micron
+    otab["x0_unc"] = np.array(tab4["e_x0"]) / u.micron
+    otab["gamma"] = np.array(tab4["gamma"]) / u.micron
+    otab["gamma_unc"] = np.array(tab4["e_gamma"]) / u.micron
 
     otab.write("fit07_ensemble_params.dat", format="ascii.ipac", overwrite=True)

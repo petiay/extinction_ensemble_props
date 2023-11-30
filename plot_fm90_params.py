@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import matplotlib.pyplot as plt
 from astropy.table import QTable
 
@@ -13,6 +14,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--av", help="plot versus A(V)", action="store_true")
     parser.add_argument("--rv", help="plot versus R(V)", action="store_true")
+    parser.add_argument("--nouncs", help="do not plot uncs", action="store_true")
     parser.add_argument(
         "--paper", help="portrait format for papers", action="store_true"
     )
@@ -29,6 +31,8 @@ if __name__ == "__main__":
         tdata = QTable.read(fname, format="ascii.ipac")
         if "B3" not in tdata.colnames:
             tdata["B3"] = tdata["C3"] / (tdata["gamma"] ** 2)
+            if "C3_unc" in tdata.colnames:
+                tdata["B3_unc"] = tdata["B3"] * np.sqrt(tdata["C3_unc"] ** 2 +  2.0 * (tdata["gamma_unc"].value ** 2))
         alldata.append(tdata)
 
     # make the plots
@@ -89,6 +93,10 @@ if __name__ == "__main__":
             if f"{ptags[i]}_unc" in cdata.colnames:
                 ydata_unc = cdata[f"{ptags[i]}_unc"]
             else:
+                ydata_unc = None
+
+            if args.nouncs:
+                xdata_unc = None
                 ydata_unc = None
 
             px, py = divmod(pi[i], ncols)

@@ -10,15 +10,24 @@ if __name__ == "__main__":
 
     otab = QTable()
     otab["AV"] = np.array(val04_dust["A(V)"]) * u.mag
+    otab["AV_unc"] = np.array(val04_dust["e_A(V)"]) * u.mag
     otab["EBV"] = np.array(val04_dust["E(B-V)"]) * u.mag
+    otab["EBV_unc"] = np.array(val04_dust["e_E(B-V)"]) * u.mag
     rv = np.array(val04_dust["R(V)"])
     otab["RV"] = rv
+    otab["RV_unc"] = val04_dust["R(V)"]
 
     otab["C1"] = (np.array(val04_fm["c1/R(V)+1.0"]) - 1.0) * rv
+    otab["C1_unc"] = (np.array(val04_fm["e_c1/R(V)+1.0"])) * rv
     otab["C2"] = np.array(val04_fm["c2/R(V)"]) * rv
+    otab["C2_unc"] = np.array(val04_fm["e_c2/R(V)"]) * rv
     otab["C3"] = np.array(val04_fm["c3/R(V)"]) * rv
+    otab["C3_unc"] = np.array(val04_fm["e_c3/R(V)"]) * rv
     otab["C4"] = np.array(val04_fm["c4/R(V)"]) * rv
+    otab["C4_unc"] = np.array(val04_fm["e_c4/R(V)"]) * rv
     otab["x0"] = np.array(val04_fm["x0"]) / u.micron
+    otab["x0_unc"] = np.array(val04_fm["e_x0"]) / u.micron
     otab["gamma"] = np.array(val04_fm["gamma"]) / u.micron
+    otab["gamma_unc"] = np.array(val04_fm["e_gamma"]) / u.micron
 
     otab.write("val04_ensemble_params.dat", format="ascii.ipac", overwrite=True)
