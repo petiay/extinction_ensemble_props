@@ -58,10 +58,10 @@ if __name__ == "__main__":
 
     # plot types, colors and alphas
     ptypes = {
-        "val04": ("k.", 0.25),
+        "val04": ("k.", 0.1),
         "gor03_smc": ("bv", 0.5),
         "gor03_lmc": ("c^", 0.5),
-        "fit07": ("yP", 0.5),
+        "fit07": ("kP", 0.1),
         "gor24_smc": ("g>", 0.5),
     }
 
