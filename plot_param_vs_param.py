@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import matplotlib.pyplot as plt
 from astropy.table import QTable
 
@@ -11,6 +12,10 @@ if __name__ == "__main__":
         default=["val04", "gor03_smc", "gor03_lmc"],
         choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor24_smc"],
     )
+    parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
+    parser.add_argument("--av", help="plot FM90 versus A(V)", action="store_true")
+    parser.add_argument("--rv", help="plot FM90 versus R(V)", action="store_true")
+    parser.add_argument("--irv", help="plot FM90 versus 1/R(V)", action="store_true")
     parser.add_argument("--nouncs", help="do not plot uncs", action="store_true")
     parser.add_argument(
         "--paper", help="portrait format for papers", action="store_true"
@@ -28,6 +33,11 @@ if __name__ == "__main__":
         tdata = QTable.read(fname, format="ascii.ipac")
         if "B3" not in tdata.colnames:
             tdata["B3"] = tdata["C3"] / (tdata["gamma"] ** 2)
+            if "C3_unc" in tdata.colnames:
+                tdata["B3_unc"] = np.absolute(tdata["B3"]) * np.sqrt(tdata["C3_unc"] ** 2 +  2.0 * (tdata["gamma_unc"].value ** 2))
+ 
+        if "IRV" not in tdata.colnames:
+            tdata["IRV"] = 1. / tdata["RV"]
         alldata.append(tdata)
 
     # make the plots
@@ -51,10 +61,35 @@ if __name__ == "__main__":
         pi = [0, 1, 3, 4, 2, 5]
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
 
-    xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_4$"]
-    xptags = ["C2", "C2", "C2", "C2", "C2", "C4"]
-    yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$", "$B_3 = C_3/\gamma^2$"]
-    yptags = ["C1", "B3", "C4", "x0", "gamma", "B3"]
+    # default values
+    yplabels = ["$C_1$", "$C_2$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$"]
+    yptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
+    if args.ebv:
+        ostr = "ebv"
+        npts = len(yplabels)
+        xplabels = ["$E(B-V)$"] * npts
+        xptags = ["EBV"] * npts
+    elif args.av:
+        ostr = "av"
+        npts = len(yplabels)
+        xplabels = ["$A(V)$"] * npts
+        xptags = ["AV"] * npts
+    elif args.rv:
+        ostr = "rv"
+        npts = len(yplabels)
+        xplabels = ["$R(V)$"] * npts
+        xptags = ["RV"] * npts
+    elif args.irv:
+        ostr = "irv"
+        npts = len(yplabels)
+        xplabels = ["1/$R(V)$"] * npts
+        xptags = ["IRV"] * npts
+    else:  # plot fm90 vs fm90
+        ostr = "fm90"
+        xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_4$"]
+        xptags = ["C2", "C2", "C2", "C2", "C2", "C4"]
+        yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$", "$B_3 = C_3/\gamma^2$"]
+        yptags = ["C1", "B3", "C4", "x0", "gamma", "B3"]
 
     # plot types, colors and alphas
     ptypes = {
@@ -102,7 +137,7 @@ if __name__ == "__main__":
 
     fig.tight_layout()
 
-    fname = "ensemble_fm90_vs_fm90_params"
+    fname = f"ensemble_{ostr}_vs_fm90_params"
     if args.png:
         fig.savefig(f"{fname}.png")
     elif args.pdf:
