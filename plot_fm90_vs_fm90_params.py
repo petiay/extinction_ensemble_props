@@ -9,10 +9,9 @@ if __name__ == "__main__":
         help="give the datasets to plot",
         nargs="+",
         default=["val04", "gor03_smc", "gor03_lmc"],
-        choices=["val04", "gor03_smc", "gor03_lmc", "gor24_smc", "gor24_smc_forecor"],
+        choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor24_smc"],
     )
-    parser.add_argument("--av", help="plot versus A(V)", action="store_true")
-    parser.add_argument("--rv", help="plot versus R(V)", action="store_true")
+    parser.add_argument("--nouncs", help="do not plot uncs", action="store_true")
     parser.add_argument(
         "--paper", help="portrait format for papers", action="store_true"
     )
@@ -62,8 +61,8 @@ if __name__ == "__main__":
         "val04": ("k.", 0.25),
         "gor03_smc": ("bv", 0.5),
         "gor03_lmc": ("c^", 0.5),
-        "gor24_smc": ("r>", 0.2),
-        "gor24_smc_forecor": ("g<", 0.5),
+        "fit07": ("yP", 0.5),
+        "gor24_smc": ("g>", 0.5),
     }
 
     for cname, cdata in zip(allnames, alldata):
@@ -77,6 +76,10 @@ if __name__ == "__main__":
             if f"{yptags[i]}_unc" in cdata.colnames:
                 ydata_unc = cdata[f"{yptags[i]}_unc"]
             else:
+                ydata_unc = None
+
+            if args.nouncs & (len(cdata[xptags[i]]) > 100):
+                xdata_unc = None
                 ydata_unc = None
 
             px, py = divmod(pi[i], ncols)
