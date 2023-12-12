@@ -12,14 +12,16 @@ if __name__ == "__main__":
         default=["val04", "gor03_smc", "gor03_lmc"],
         choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor24_smc"],
     )
+    parser.add_argument("--sprops", help="sample properties", action="store_true")
     parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
     parser.add_argument("--av", help="plot FM90 versus A(V)", action="store_true")
+    parser.add_argument("--nhi", help="plot FM90 versus N(HI)", action="store_true")
     parser.add_argument("--rv", help="plot FM90 versus R(V)", action="store_true")
     parser.add_argument("--irv", help="plot FM90 versus 1/R(V)", action="store_true")
     parser.add_argument("--nouncs", help="do not plot uncs", action="store_true")
-    parser.add_argument(
-        "--paper", help="portrait format for papers", action="store_true"
-    )
+    parser.add_argument("--ebvcut", help="only plot data above E(B-V) value",
+                        type=float, default=0.0)
+    parser.add_argument("--paper", help="portrait format", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
@@ -31,6 +33,8 @@ if __name__ == "__main__":
         fname = f"data/{cset}_ensemble_params.dat"
         allnames.append(cset)
         tdata = QTable.read(fname, format="ascii.ipac")
+
+        # now add data if missing and derivable from expected columns
         if "B3" not in tdata.colnames:
             tdata["B3"] = tdata["C3"] / (tdata["gamma"] ** 2)
             if "C3_unc" in tdata.colnames:
@@ -38,6 +42,13 @@ if __name__ == "__main__":
  
         if "IRV" not in tdata.colnames:
             tdata["IRV"] = 1. / tdata["RV"]
+
+        if "NHI_EBV" not in tdata.colnames:
+            tdata["NHI_EBV"] = tdata["NHI"] / tdata["EBV"]
+
+        if args.ebvcut > 0.0:
+            tdata = tdata[tdata["EBV"] > args.ebvcut]
+
         alldata.append(tdata)
 
     # make the plots
@@ -64,7 +75,13 @@ if __name__ == "__main__":
     # default values
     yplabels = ["$C_1$", "$C_2$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$"]
     yptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
-    if args.ebv:
+    if args.sprops:
+        ostr = "sprops"
+        xplabels = ["$E(B-V)$", "$E(B-V)$", "$C_2$", "$C_2$", "$C_2$", "$A(V)$"]
+        xptags = ["EBV", "EBV", "C2", "C2", "C2", "AV"]
+        yplabels = ["$R(V)$", "$N(HI)$", "$C_4$", "$x_o$", r"$\gamma$", "$R(V)$"]
+        yptags = ["RV", "NHI", "C4", "x0", "gamma", "RV"]
+    elif args.ebv:
         ostr = "ebv"
         npts = len(yplabels)
         xplabels = ["$E(B-V)$"] * npts
@@ -74,6 +91,11 @@ if __name__ == "__main__":
         npts = len(yplabels)
         xplabels = ["$A(V)$"] * npts
         xptags = ["AV"] * npts
+    elif args.nhi:
+        ostr = "nhi"
+        npts = len(yplabels)
+        xplabels = ["$N(HI)$"] * npts
+        xptags = ["NHI"] * npts
     elif args.rv:
         ostr = "rv"
         npts = len(yplabels)
