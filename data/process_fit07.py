@@ -15,6 +15,7 @@ if __name__ == "__main__":
 
     # build the table in the common format
     otab = QTable()
+    otab["Name"] = np.array(tab3["Name"])
     otab["EBV"] = np.array(tab3["E(B-V)"]) * u.mag
     otab["EBV_unc"] = np.array(tab3["e_E(B-V)"]) * u.mag
     otab["RV"] = np.array(tab4["R(V)"])

@@ -9,8 +9,8 @@ if __name__ == "__main__":
         "--datasets",
         help="give the datasets to plot",
         nargs="+",
-        default=["val04", "gor03_smc", "gor03_lmc"],
-        choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor24_smc"],
+        default=["val04", "fit07", "gor09"],
+        choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor09", "gor24_smc"],
     )
     parser.add_argument("--sprops", help="sample properties", action="store_true")
     parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
@@ -25,6 +25,16 @@ if __name__ == "__main__":
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
     args = parser.parse_args()
+
+    # plot types, colors and alphas
+    ptypes = {
+        "val04": ("k.", 0.1),
+        "gor03_smc": ("bv", 0.5),
+        "gor03_lmc": ("c^", 0.5),
+        "fit07": ("kP", 0.1),
+        "gor09": ("ro", 0.25),
+        "gor24_smc": ("g>", 0.5),
+    }
 
     # get the data to plot
     allnames = []
@@ -43,11 +53,14 @@ if __name__ == "__main__":
         if "IRV" not in tdata.colnames:
             tdata["IRV"] = 1. / tdata["RV"]
 
-        if "NHI_EBV" not in tdata.colnames:
+        if ("NHI" in tdata.colnames) & ("NHI_EBV" not in tdata.colnames):
             tdata["NHI_EBV"] = tdata["NHI"] / tdata["EBV"]
 
+        if ("NHI" in tdata.colnames) & ("NHI_AV" not in tdata.colnames):
+            tdata["NHI_AV"] = tdata["NHI"] / tdata["AV"]
+
         if args.ebvcut > 0.0:
-            tdata = tdata[tdata["EBV"] > args.ebvcut]
+            tdata = tdata[tdata["EBV"].value > args.ebvcut]
 
         alldata.append(tdata)
 
@@ -70,17 +83,20 @@ if __name__ == "__main__":
         nrows = 2
         ncols = 3
         pi = [0, 1, 3, 4, 2, 5]
-    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
 
     # default values
     yplabels = ["$C_1$", "$C_2$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$"]
     yptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
     if args.sprops:
         ostr = "sprops"
-        xplabels = ["$E(B-V)$", "$E(B-V)$", "$C_2$", "$C_2$", "$C_2$", "$A(V)$"]
-        xptags = ["EBV", "EBV", "C2", "C2", "C2", "AV"]
-        yplabels = ["$R(V)$", "$N(HI)$", "$C_4$", "$x_o$", r"$\gamma$", "$R(V)$"]
-        yptags = ["RV", "NHI", "C4", "x0", "gamma", "RV"]
+        fsize = (12, 10)
+        nrows = 2
+        ncols = 2
+        pi = [0, 1, 2, 3]
+        xplabels = ["$E(B-V)$", "$E(B-V)$", "$C_2$", "$B_3$"]
+        xptags = ["EBV", "EBV", "C2", "B3"]
+        yplabels = ["$R(V)$", "$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/A(V)$"]
+        yptags = ["RV", "NHI", "NHI_EBV", "NHI_AV"]
     elif args.ebv:
         ostr = "ebv"
         npts = len(yplabels)
@@ -113,18 +129,11 @@ if __name__ == "__main__":
         yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$", "$B_3 = C_3/\gamma^2$"]
         yptags = ["C1", "B3", "C4", "x0", "gamma", "B3"]
 
-    # plot types, colors and alphas
-    ptypes = {
-        "val04": ("k.", 0.1),
-        "gor03_smc": ("bv", 0.5),
-        "gor03_lmc": ("c^", 0.5),
-        "fit07": ("kP", 0.1),
-        "gor24_smc": ("g>", 0.5),
-    }
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
 
     for cname, cdata in zip(allnames, alldata):
         ptype, palpha = ptypes[cname]
-        for i in range(6):
+        for i in range(nrows * ncols):
             # check if uncertainties are included
             if f"{xptags[i]}_unc" in cdata.colnames:
                 xdata_unc = cdata[f"{xptags[i]}_unc"]
@@ -150,7 +159,7 @@ if __name__ == "__main__":
                 alpha=palpha,
             )
 
-    for i in range(6):
+    for i in range(nrows * ncols):
         px, py = divmod(pi[i], ncols)
         ax[px, py].set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
         ax[px, py].set_ylabel(yplabels[i], fontsize=1.3 * fontsize)

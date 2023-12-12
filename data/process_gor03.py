@@ -14,6 +14,7 @@ if __name__ == "__main__":
 
     for gor03, oname in zip([gor03_smc, gor03_lmc], ["smc", "lmc"]):
         otab = QTable()
+        otab["Name"] = gor03["name"]
         otab["EBV"] = gor03["ebv"] * u.mag
         otab["EBV_unc"] = gor03["ebv_u"] * u.mag
         otab["RV"] = gor03["rv"]
@@ -33,5 +34,8 @@ if __name__ == "__main__":
         otab["x0_unc"] = np.array(gor03["x0_u"]) / u.micron
         otab["gamma"] = np.array(gor03["gamma"]) / u.micron
         otab["gamma_unc"] = np.array(gor03["gamma_u"]) / u.micron
+
+        otab["NHI"] = np.array(gor03["nhi"]) * 1e21
+        otab["NHI_unc"] = np.array(gor03["nhi_unc"]) * 1e21
 
         otab.write(f"gor03_{oname}_ensemble_params.dat", format="ascii.ipac", overwrite=True)
