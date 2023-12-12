@@ -10,7 +10,8 @@ if __name__ == "__main__":
         help="give the datasets to plot",
         nargs="+",
         default=["val04", "fit07", "gor09"],
-        choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor09", "gor24_smc"],
+        choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor09", "gor24_smc",
+                 "gor24_smc_nobump", "gor24_smc_bump", "gor24_smc_flat", "gor24_smc_lowebv"],
     )
     parser.add_argument("--sprops", help="sample properties", action="store_true")
     parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
@@ -29,11 +30,15 @@ if __name__ == "__main__":
     # plot types, colors and alphas
     ptypes = {
         "val04": ("k.", 0.1),
-        "gor03_smc": ("bv", 0.5),
-        "gor03_lmc": ("c^", 0.5),
-        "fit07": ("kP", 0.1),
-        "gor09": ("ro", 0.25),
-        "gor24_smc": ("g>", 0.5),
+        "gor03_smc": ("m<", 0.5),
+        "gor03_lmc": (("tab:orange", ">"), 0.5),
+        "fit07": ("k+", 0.1),
+        "gor09": ("gD", 0.25),
+        "gor24_smc": ("b>", 0.5),
+        "gor24_smc_nobump": ("bo", 0.5),
+        "gor24_smc_bump": ("rP", 0.5),
+        "gor24_smc_flat": ("cs", 0.5),
+        "gor24_smc_lowebv": (("tab:brown", "v"), 0.5),
     }
 
     # get the data to plot
@@ -100,8 +105,8 @@ if __name__ == "__main__":
         pi = [0, 1, 2, 3]
         xplabels = ["$E(B-V)$", "$E(B-V)$", "$C_2$", "$B_3$"]
         xptags = ["EBV", "EBV", "C2", "B3"]
-        yplabels = ["$R(V)$", "$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/A(V)$"]
-        yptags = ["RV", "NHI", "NHI_EBV", "NHI_AV"]
+        yplabels = ["$R(V)$", "$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$"]
+        yptags = ["RV", "NHI", "NHI_EBV", "NHI_EBV"]
     elif args.ebv:
         ostr = "ebv"
         npts = len(yplabels)
@@ -149,9 +154,12 @@ if __name__ == "__main__":
             else:
                 ydata_unc = None
 
-            if args.nouncs & (len(cdata[xptags[i]]) > 100):
+            if args.nouncs & (len(cdata[xptags[i]]) > 50):
                 xdata_unc = None
                 ydata_unc = None
+
+            colstr = ptype[0]
+            symstr = ptype[1]
 
             px, py = divmod(pi[i], ncols)
             ax[px, py].errorbar(
@@ -159,7 +167,9 @@ if __name__ == "__main__":
                 cdata[yptags[i]],
                 xerr=xdata_unc,
                 yerr=ydata_unc,
-                fmt=ptype,
+                color=colstr,
+                marker=symstr,
+                linestyle="",
                 label=cname,
                 alpha=palpha,
             )
@@ -169,7 +179,7 @@ if __name__ == "__main__":
         ax[px, py].set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
         ax[px, py].set_ylabel(yplabels[i], fontsize=1.3 * fontsize)
 
-    ax[0, 0].legend()
+    ax[0, 0].legend(fontsize=0.7*fontsize)
 
     fig.tight_layout()
 
