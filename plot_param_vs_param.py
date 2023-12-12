@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--rv", help="plot FM90 versus R(V)", action="store_true")
     parser.add_argument("--irv", help="plot FM90 versus 1/R(V)", action="store_true")
     parser.add_argument("--nouncs", help="do not plot uncs", action="store_true")
-    parser.add_argument("--ebvcut", help="only plot data above E(B-V) value",
+    parser.add_argument("--ebvcut", help="only plot data equal or above E(B-V) value",
                         type=float, default=0.0)
     parser.add_argument("--paper", help="portrait format", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
@@ -52,15 +52,20 @@ if __name__ == "__main__":
  
         if "IRV" not in tdata.colnames:
             tdata["IRV"] = 1. / tdata["RV"]
+            tdata["IRV_unc"] = tdata["IRV"] * tdata["RV_unc"] / tdata["RV"]
 
         if ("NHI" in tdata.colnames) & ("NHI_EBV" not in tdata.colnames):
             tdata["NHI_EBV"] = tdata["NHI"] / tdata["EBV"]
+            tdata["NHI_EBV_unc"] = (tdata["NHI_unc"] / tdata["NHI"]) **2 + (tdata["EBV_unc"] / tdata["EBV"]) **2
+            tdata["NHI_EBV_unc"] = tdata["NHI_EBV"] * np.sqrt(tdata["NHI_EBV_unc"])
 
         if ("NHI" in tdata.colnames) & ("NHI_AV" not in tdata.colnames):
             tdata["NHI_AV"] = tdata["NHI"] / tdata["AV"]
+            tdata["NHI_AV_unc"] = (tdata["NHI_unc"] / tdata["NHI"]) **2 + (tdata["AV_unc"] / tdata["AV"]) **2
+            tdata["NHI_AV_unc"] = tdata["NHI_AV"] * np.sqrt(tdata["NHI_AV_unc"])
 
         if args.ebvcut > 0.0:
-            tdata = tdata[tdata["EBV"].value > args.ebvcut]
+            tdata = tdata[tdata["EBV"].value >= args.ebvcut]
 
         alldata.append(tdata)
 

@@ -36,5 +36,5 @@ format for this repository (e.g., `data/process_valencic04.py`).
 Plots
 -----
 
-plot_fm90_params: plot FM90 parameters versus E(B-V), A(V), or E(B-V)
-plot_fm90_vs_fm90_params: plot FM90 parameters versus each other
+plot_param_vs_param: plot combination of FM90 parameters E(B-V), A(V), E(B-V),
+  N(HI), N(HI)/E(B-V), etc. versus each other depending on commandline parameters
