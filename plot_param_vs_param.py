@@ -22,6 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("--nouncs", help="do not plot uncs", action="store_true")
     parser.add_argument("--ebvcut", help="only plot data equal or above E(B-V) value",
                         type=float, default=0.0)
+    parser.add_argument("--showstats", help="print summary stats for each dataset", action="store_true")    
     parser.add_argument("--paper", help="portrait format", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -73,6 +74,14 @@ if __name__ == "__main__":
             tdata = tdata[tdata["EBV"].value >= args.ebvcut]
 
         alldata.append(tdata)
+
+        if args.showstats:
+            print(f"Summary statistics for {cset}")
+            for ccol in tdata.colnames:
+                if ("name" not in ccol.lower()) & ("unc" not in ccol.lower()):
+                    ave = np.average(tdata[ccol].data)
+                    std = np.std(tdata[ccol].data)
+                    print(f"{ccol}: ave = {ave} +/- {std}")
 
     # make the plots
     fontsize = 14

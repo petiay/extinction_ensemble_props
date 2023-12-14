@@ -9,6 +9,7 @@ if __name__ == "__main__":
     val04_fm = QTable.read("Valencic04/valencic04_datafile5.txt", format="ascii.cds")
 
     otab = QTable()
+    otab["Name"] = np.array(val04_dust["Name"])
     otab["AV"] = np.array(val04_dust["A(V)"]) * u.mag
     otab["AV_unc"] = np.array(val04_dust["e_A(V)"]) * u.mag
     otab["EBV"] = np.array(val04_dust["E(B-V)"]) * u.mag
