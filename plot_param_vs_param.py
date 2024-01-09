@@ -14,6 +14,7 @@ if __name__ == "__main__":
                  "gor24_smc_nobump", "gor24_smc_bump", "gor24_smc_flat", "gor24_smc_lowebv"],
     )
     parser.add_argument("--sprops", help="sample properties", action="store_true")
+    parser.add_argument("--fm90main", help="only plot the main FM90 parameters", action="store_true")
     parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
     parser.add_argument("--av", help="plot FM90 versus A(V)", action="store_true")
     parser.add_argument("--nhi", help="plot FM90 versus N(HI)", action="store_true")
@@ -30,16 +31,16 @@ if __name__ == "__main__":
 
     # plot types, colors and alphas
     ptypes = {
-        "val04": ("k.", 0.1),
-        "gor03_smc": ("m<", 0.5),
-        "gor03_lmc": (("tab:orange", ">"), 0.5),
-        "fit07": ("k+", 0.1),
-        "gor09": ("gD", 0.25),
-        "gor24_smc": ("b>", 0.5),
-        "gor24_smc_nobump": ("bo", 0.5),
-        "gor24_smc_bump": ("rP", 0.5),
-        "gor24_smc_flat": ("cs", 0.5),
-        "gor24_smc_lowebv": (("tab:brown", "v"), 0.5),
+        "val04": ("k.", 0.1, "MW: VCG04"),
+        "gor03_smc": ("m<", 0.25, "SMC: G03"),
+        "gor03_lmc": (("tab:orange", ">"), 0.25, "LMC: G03"),
+        "fit07": ("k+", 0.1, "MW: FM07"),
+        "gor09": ("kD", 0.25, "MW: GCC09"),
+        "gor24_smc": ("b>", 0.5, "SMC: G24"),
+        "gor24_smc_nobump": ("bo", 0.5, "SMC: Weak/absent 2175 A bump"),
+        "gor24_smc_bump": ("rP", 0.5, "SMC: Significant 2175 A bump"),
+        "gor24_smc_flat": ("cs", 0.5, "SMC: Flat"),
+        "gor24_smc_lowebv": (("tab:brown", "v"), 0.5, r"SMC: $E(B-V)_\mathrm{SMC} < 0.1$"),
     }
 
     # get the data to plot
@@ -96,7 +97,7 @@ if __name__ == "__main__":
         fsize = (12, 14)
         nrows = 3
         ncols = 2
-        pi = [0, 1, 2, 4, 5, 3]
+        pi = [0, 1, 2, 3, 4, 5]
     else:
         fsize = (18, 10)
         nrows = 2
@@ -112,10 +113,10 @@ if __name__ == "__main__":
         nrows = 2
         ncols = 2
         pi = [0, 1, 2, 3]
-        xplabels = ["$E(B-V)$", "$E(B-V)$", "$C_2$", "$B_3$"]
-        xptags = ["EBV", "EBV", "C2", "B3"]
-        yplabels = ["$R(V)$", "$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$"]
-        yptags = ["RV", "NHI", "NHI_EBV", "NHI_EBV"]
+        xplabels = ["$E(B-V)$", "$E(B-V)$", "$C_2$", "$B_3$", "$x_0$"]
+        xptags = ["EBV", "EBV", "C2", "B3", "x0"]
+        yplabels = ["$R(V)$", "$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$", "$\gamma$"]
+        yptags = ["RV", "NHI", "NHI_EBV", "NHI_EBV", "gamma"]
     elif args.ebv:
         ostr = "ebv"
         npts = len(yplabels)
@@ -141,17 +142,27 @@ if __name__ == "__main__":
         npts = len(yplabels)
         xplabels = ["1/$R(V)$"] * npts
         xptags = ["IRV"] * npts
+    elif args.fm90main:
+        ostr = "fm90main"
+        fsize = (12, 10)
+        nrows = 2
+        ncols = 2
+        pi = [0, 1, 2, 3]
+        xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_4$"]
+        xptags = ["C2", "C2", "C2", "C4"]
+        yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$B_3 = C_3/\gamma^2$"]
+        yptags = ["C1", "B3", "C4", "B3"]
     else:  # plot fm90 vs fm90
         ostr = "fm90"
-        xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_2$", "$C_4$"]
-        xptags = ["C2", "C2", "C2", "C2", "C2", "C4"]
-        yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$", "$B_3 = C_3/\gamma^2$"]
-        yptags = ["C1", "B3", "C4", "x0", "gamma", "B3"]
+        xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_2$", "$B_3$", "$x_0$"] #, "$C_4$"]
+        xptags = ["C2", "C2", "C2", "C2", "B3", "x0"]   # , "C4"]
+        yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_0$", r"$\gamma$", "$\gamma$"]   # , "$B_3 = C_3/\gamma^2$"]
+        yptags = ["C1", "B3", "C4", "x0", "gamma", "gamma"]  # , "B3"]
 
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
 
     for cname, cdata in zip(allnames, alldata):
-        ptype, palpha = ptypes[cname]
+        ptype, palpha, plabel = ptypes[cname]
         for i in range(nrows * ncols):
             # check if uncertainties are included
             if f"{xptags[i]}_unc" in cdata.colnames:
@@ -179,7 +190,7 @@ if __name__ == "__main__":
                 color=colstr,
                 marker=symstr,
                 linestyle="",
-                label=cname,
+                label=plabel,
                 alpha=palpha,
             )
 
