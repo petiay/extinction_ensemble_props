@@ -14,6 +14,7 @@ if __name__ == "__main__":
                  "gor24_smc_nobump", "gor24_smc_bump", "gor24_smc_flat", "gor24_smc_lowebv"],
     )
     parser.add_argument("--sprops", help="sample properties", action="store_true")
+    parser.add_argument("--gdprops", help="N(HI)/E(B-V) properties", action="store_true")
     parser.add_argument("--fm90main", help="only plot the main FM90 parameters", action="store_true")
     parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
     parser.add_argument("--av", help="plot FM90 versus A(V)", action="store_true")
@@ -113,10 +114,20 @@ if __name__ == "__main__":
         nrows = 2
         ncols = 2
         pi = [0, 1, 2, 3]
-        xplabels = ["$E(B-V)$", "$E(B-V)$", "$C_2$", "$B_3$", "$x_0$"]
-        xptags = ["EBV", "EBV", "C2", "B3", "x0"]
-        yplabels = ["$R(V)$", "$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$", "$\gamma$"]
-        yptags = ["RV", "NHI", "NHI_EBV", "NHI_EBV", "gamma"]
+        xplabels = ["$E(B-V)$", "$A(V)$", "$E(B-V)$", "$A(V)$"]
+        xptags = ["EBV", "AV", "EBV", "AV"]
+        yplabels = ["$R(V)$", "$R(V)$", "$N(HI)/E(B-V)$", "$N(HI)/A(V)$"]
+        yptags = ["RV", "RV", "NHI_EBV", "NHI_AV"]
+    elif args.gdprops:
+        ostr = "gdprops"
+        fsize = (12, 10)
+        nrows = 2
+        ncols = 2
+        pi = [0, 1, 2, 3]
+        xplabels = ["$E(B-V)$", "$C_2$", "$B_3$", "$C_4$"]
+        xptags = ["EBV", "C2", "B3", "C4"]
+        yplabels = ["$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$"]
+        yptags = ["NHI", "NHI_EBV", "NHI_EBV", "NHI_EBV"]
     elif args.ebv:
         ostr = "ebv"
         npts = len(yplabels)
