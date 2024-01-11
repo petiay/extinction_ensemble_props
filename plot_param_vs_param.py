@@ -14,6 +14,7 @@ if __name__ == "__main__":
                  "gor24_smc_nobump", "gor24_smc_bump", "gor24_smc_flat", "gor24_smc_lowebv"],
     )
     parser.add_argument("--sprops", help="sample properties", action="store_true")
+    parser.add_argument("--rvebv", help="sample properties", action="store_true")
     parser.add_argument("--gdprops", help="N(HI)/E(B-V) properties", action="store_true")
     parser.add_argument("--fm90main", help="only plot the main FM90 parameters", action="store_true")
     parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
@@ -118,16 +119,26 @@ if __name__ == "__main__":
         xptags = ["EBV", "AV", "EBV", "AV"]
         yplabels = ["$R(V)$", "$R(V)$", "$N(HI)/E(B-V)$", "$N(HI)/A(V)$"]
         yptags = ["RV", "RV", "NHI_EBV", "NHI_AV"]
+    elif args.rvebv:
+        ostr = "rvebv"
+        fsize = (12, 6)
+        nrows = 1
+        ncols = 2
+        pi = [0, 1]
+        xplabels = ["$E(B-V)$", "$E(B-V)$"]
+        xptags = ["EBV", "EBV"]
+        yplabels = ["$R(V)$", "$N(HI)/E(B-V)$"]
+        yptags = ["RV", "NHI_EBV"]
     elif args.gdprops:
         ostr = "gdprops"
         fsize = (12, 10)
         nrows = 2
         ncols = 2
         pi = [0, 1, 2, 3]
-        xplabels = ["$E(B-V)$", "$C_2$", "$B_3$", "$C_4$"]
-        xptags = ["EBV", "C2", "B3", "C4"]
-        yplabels = ["$N(HI)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$", "$N(HI)/E(B-V)$"]
-        yptags = ["NHI", "NHI_EBV", "NHI_EBV", "NHI_EBV"]
+        xplabels = ["$A(V)$", "$C_2$", "$B_3$", "$C_4$"]
+        xptags = ["AV", "C2", "B3", "C4"]
+        yplabels = ["$N(HI)$", "$N(HI)/A(V)$", "$N(HI)/A(V)$", "$N(HI)/A(V)$"]
+        yptags = ["NHI", "NHI_AV", "NHI_AV", "NHI_AV"]
     elif args.ebv:
         ostr = "ebv"
         npts = len(yplabels)
@@ -209,6 +220,8 @@ if __name__ == "__main__":
         px, py = divmod(pi[i], ncols)
         ax[px, py].set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
         ax[px, py].set_ylabel(yplabels[i], fontsize=1.3 * fontsize)
+        if yptags[i] in ["NHI_EBV", "NHI_AV"]:
+            ax[px, py].set_yscale("log")
 
     ax[0, 0].legend(fontsize=0.7*fontsize)
 
