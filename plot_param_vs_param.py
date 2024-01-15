@@ -72,7 +72,7 @@ if __name__ == "__main__":
             tdata["IRV_unc"] = tdata["IRV"] * tdata["RV_unc"] / tdata["RV"]
 
         # divide by 10^21 to make easier to undertand and fit numbers
-        if ("NHI in tdata.colnames"):
+        if "NHI" in tdata.colnames:
             tdata["NHI"] /= 1e21
             tdata["NHI_unc"] /= 1e21
 
