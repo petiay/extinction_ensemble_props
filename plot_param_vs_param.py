@@ -1,7 +1,13 @@
+import sys
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.optimize as op
 from astropy.table import QTable
+from astropy.modeling import models, fitting
+from astropy.stats import sigma_clip
+
+from utils.fit_full2dcor import lnlike_correlated
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -14,7 +20,8 @@ if __name__ == "__main__":
                  "gor24_smc_nobump", "gor24_smc_bump", "gor24_smc_flat", "gor24_smc_lowebv"],
     )
     parser.add_argument("--sprops", help="sample properties", action="store_true")
-    parser.add_argument("--rvebv", help="sample properties", action="store_true")
+    parser.add_argument("--spropsebv", help="sample properties versus ebv", action="store_true")
+    parser.add_argument("--spropsav", help="sample properties versus av", action="store_true")
     parser.add_argument("--gdprops", help="N(HI)/E(B-V) properties", action="store_true")
     parser.add_argument("--fm90main", help="only plot the main FM90 parameters", action="store_true")
     parser.add_argument("--ebv", help="plot FM90 versus E(B-V)", action="store_true")
@@ -26,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("--ebvcut", help="only plot data equal or above E(B-V) value",
                         type=float, default=0.0)
     parser.add_argument("--showstats", help="print summary stats for each dataset", action="store_true")    
+    parser.add_argument("--fit", help="Fit lines for some plots", action="store_true")
     parser.add_argument("--paper", help="portrait format", action="store_true")
     parser.add_argument("--png", help="save figure as a png file", action="store_true")
     parser.add_argument("--pdf", help="save figure as a pdf file", action="store_true")
@@ -62,6 +70,11 @@ if __name__ == "__main__":
         if "IRV" not in tdata.colnames:
             tdata["IRV"] = 1. / tdata["RV"]
             tdata["IRV_unc"] = tdata["IRV"] * tdata["RV_unc"] / tdata["RV"]
+
+        # divide by 10^21 to make easier to undertand and fit numbers
+        if ("NHI in tdata.colnames"):
+            tdata["NHI"] /= 1e21
+            tdata["NHI_unc"] /= 1e21
 
         if ("NHI" in tdata.colnames) & ("NHI_EBV" not in tdata.colnames):
             tdata["NHI_EBV"] = tdata["NHI"] / tdata["EBV"]
@@ -109,6 +122,7 @@ if __name__ == "__main__":
     # default values
     yplabels = ["$C_1$", "$C_2$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$"]
     yptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
+    fitlines = [False] * (nrows * ncols)
     if args.sprops:
         ostr = "sprops"
         fsize = (12, 10)
@@ -117,18 +131,28 @@ if __name__ == "__main__":
         pi = [0, 1, 2, 3]
         xplabels = ["$E(B-V)$", "$A(V)$", "$E(B-V)$", "$A(V)$"]
         xptags = ["EBV", "AV", "EBV", "AV"]
-        yplabels = ["$R(V)$", "$R(V)$", "$N(HI)/E(B-V)$", "$N(HI)/A(V)$"]
+        yplabels = ["$R(V)$", "$R(V)$", "$N(HI)/E(B-V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]"]
         yptags = ["RV", "RV", "NHI_EBV", "NHI_AV"]
-    elif args.rvebv:
-        ostr = "rvebv"
+    elif args.spropsebv:
+        ostr = "sprops_ebv"
         fsize = (12, 6)
         nrows = 1
         ncols = 2
         pi = [0, 1]
         xplabels = ["$E(B-V)$", "$E(B-V)$"]
         xptags = ["EBV", "EBV"]
-        yplabels = ["$R(V)$", "$N(HI)/E(B-V)$"]
+        yplabels = ["$R(V)$", "$N(HI)/E(B-V)$ [$10^{21}$]"]
         yptags = ["RV", "NHI_EBV"]
+    elif args.spropsav:
+        ostr = "sprops_av"
+        fsize = (12, 6)
+        nrows = 1
+        ncols = 2
+        pi = [0, 1]
+        xplabels = ["$A(V)$", "$A(V)$"]
+        xptags = ["AV", "AV"]
+        yplabels = ["$R(V)$", "$N(HI)/A(V)$ [$10^{21}$]"]
+        yptags = ["RV", "NHI_AV"]
     elif args.gdprops:
         ostr = "gdprops"
         fsize = (12, 10)
@@ -137,8 +161,10 @@ if __name__ == "__main__":
         pi = [0, 1, 2, 3]
         xplabels = ["$A(V)$", "$C_2$", "$B_3$", "$C_4$"]
         xptags = ["AV", "C2", "B3", "C4"]
-        yplabels = ["$N(HI)$", "$N(HI)/A(V)$", "$N(HI)/A(V)$", "$N(HI)/A(V)$"]
+        yplabels = ["$N(HI)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]",
+                    "$N(HI)/A(V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]"]
         yptags = ["NHI", "NHI_AV", "NHI_AV", "NHI_AV"]
+        fitlines = [False, True, True, True]
     elif args.ebv:
         ostr = "ebv"
         npts = len(yplabels)
@@ -170,6 +196,7 @@ if __name__ == "__main__":
         nrows = 2
         ncols = 2
         pi = [0, 1, 2, 3]
+        fitlines = [True] * nrows * ncols
         xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_4$"]
         xptags = ["C2", "C2", "C2", "C4"]
         yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$B_3 = C_3/\gamma^2$"]
@@ -183,16 +210,32 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
 
-    for cname, cdata in zip(allnames, alldata):
-        ptype, palpha, plabel = ptypes[cname]
-        for i in range(nrows * ncols):
+    for i in range(nrows * ncols):
+        xvals = []
+        xvals_unc = []
+        yvals = []
+        yvals_unc = []
+        for cname, cdata in zip(allnames, alldata):
+            ptype, palpha, plabel = ptypes[cname]
+            if i > 0:
+                plabel = None
+
+            xdata = cdata[xptags[i]].data
+            ydata = cdata[yptags[i]].data
+
+            # for fitting
+            xvals = np.concatenate((xvals, xdata))
+            yvals = np.concatenate((yvals, ydata))
+
             # check if uncertainties are included
             if f"{xptags[i]}_unc" in cdata.colnames:
-                xdata_unc = cdata[f"{xptags[i]}_unc"]
+                xdata_unc = cdata[f"{xptags[i]}_unc"].data
+                xvals_unc = np.concatenate((xvals_unc, xdata_unc))
             else:
                 xdata_unc = None
             if f"{yptags[i]}_unc" in cdata.colnames:
-                ydata_unc = cdata[f"{yptags[i]}_unc"]
+                ydata_unc = cdata[f"{yptags[i]}_unc"].data
+                yvals_unc = np.concatenate((yvals_unc, ydata_unc))
             else:
                 ydata_unc = None
 
@@ -203,10 +246,15 @@ if __name__ == "__main__":
             colstr = ptype[0]
             symstr = ptype[1]
 
-            px, py = divmod(pi[i], ncols)
-            ax[px, py].errorbar(
-                cdata[xptags[i]],
-                cdata[yptags[i]],
+            if (nrows == 1) | (ncols == 1):
+                tax = ax[i]
+            else:
+                px, py = divmod(pi[i], ncols)
+                tax = ax[px, py]
+
+            tax.errorbar(
+                xdata,
+                ydata,
                 xerr=xdata_unc,
                 yerr=ydata_unc,
                 color=colstr,
@@ -216,14 +264,59 @@ if __name__ == "__main__":
                 alpha=palpha,
             )
 
-    for i in range(nrows * ncols):
-        px, py = divmod(pi[i], ncols)
-        ax[px, py].set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
-        ax[px, py].set_ylabel(yplabels[i], fontsize=1.3 * fontsize)
+        tax.set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
+        tax.set_ylabel(yplabels[i], fontsize=1.3 * fontsize)
         if yptags[i] in ["NHI_EBV", "NHI_AV"]:
-            ax[px, py].set_yscale("log")
+            tax.set_yscale("log")
 
-    ax[0, 0].legend(fontsize=0.7*fontsize)
+        if fitlines[i] & args.fit:
+
+            # now fit a line to the data
+            npts = len(xvals)
+            covs = np.zeros((npts, 2, 2))
+            covs2 = np.zeros((npts, 2, 2))
+            for k in range(npts):
+                covs[k, 0, 0] = xvals_unc[k]
+                covs[k, 0, 1] = 0.0
+                covs[k, 1, 0] = 0.0
+                covs[k, 1, 1] = yvals_unc[k]
+
+                if not np.all(np.linalg.eigvals(covs[k, :, :]) > 0):
+                    print(k, np.all(np.linalg.eigvals(covs[k, :, :]) > 0))
+                    print(covs[k, :, :])
+
+                if np.linalg.cond(covs[k, :, :]) > 1/sys.float_info.epsilon:
+                    print(k, np.all(np.linalg.cond(covs[k, :, :])))
+                    print(covs[k, :, :])         
+            xlim = tax.get_xlim()
+            ylim = tax.get_ylim()
+            dxlim = xlim[1] - xlim[0]
+            intinfo = [xlim[0] - dxlim, xlim[1] + dxlim, dxlim/100]
+
+            def nll(*args):
+                return -lnlike_correlated(*args)
+
+            line_orig = models.Linear1D(slope=1.0, intercept=0.0)
+            fit = fitting.LinearLSQFitter()
+            or_fit = fitting.FittingWithOutlierRemoval(fit, sigma_clip, niter=3, sigma=3.0)
+            fitted_line= fit(line_orig, xvals, yvals, weights=1/yvals_unc)
+            # fitted_line, mask = or_fit(line_orig, xvals, yvals, weights=1/yvals_unc)
+
+            # masked_data = np.ma.masked_array(yvals, mask=~mask)
+            # tax.plot(xvals, masked_data, "ko", fillstyle="none", ms=10, label="Not used in fit")
+
+            result = op.minimize(nll, fitted_line.parameters, args=(yvals, fitted_line, covs, intinfo, xvals))
+            nparams = result["x"]
+            fitted_line = models.Linear1D(slope=nparams[0], intercept=nparams[1])
+            x = np.arange(xlim[0], xlim[1], 0.01)
+            tax.plot(x, fitted_line(x), "k--", label=f"Fit: {nparams[1]:.2f} + {nparams[0]:.2f}x")
+
+            tax.set_ylim(ylim)
+
+            tax.legend(fontsize=0.7*fontsize)
+
+        elif i == 0: 
+            tax.legend(fontsize=0.7*fontsize)
 
     fig.tight_layout()
 
