@@ -66,7 +66,11 @@ if __name__ == "__main__":
             tdata["B3"] = tdata["C3"] / (tdata["gamma"] ** 2)
             if "C3_unc" in tdata.colnames:
                 tdata["B3_unc"] = np.absolute(tdata["B3"]) * np.sqrt(tdata["C3_unc"] ** 2 +  2.0 * (tdata["gamma_unc"].value ** 2))
- 
+            # temp fix until LMC and MW GCC09 can be refit with B3
+            # C3 and gamma strongly correlated
+            if args.fit:
+                tdata["B3_unc"] *= 0.2
+
         if "IRV" not in tdata.colnames:
             tdata["IRV"] = 1. / tdata["RV"]
             tdata["IRV_unc"] = tdata["IRV"] * tdata["RV_unc"] / tdata["RV"]
@@ -296,19 +300,24 @@ if __name__ == "__main__":
             def nll(*args):
                 return -lnlike_correlated(*args)
 
+            x = np.arange(xlim[0], xlim[1], 0.01)
             line_orig = models.Linear1D(slope=1.0, intercept=0.0)
             fit = fitting.LinearLSQFitter()
             or_fit = fitting.FittingWithOutlierRemoval(fit, sigma_clip, niter=3, sigma=3.0)
             fitted_line= fit(line_orig, xvals, yvals, weights=1/yvals_unc)
+            nparams = fitted_line.parameters
+            # tax.plot(x, fitted_line(x), "k:", label=f"Fit: {nparams[1]:.2f} + {nparams[0]:.2f}x")
+
             # fitted_line, mask = or_fit(line_orig, xvals, yvals, weights=1/yvals_unc)
+            # print(fitted_line.parameters)
 
             # masked_data = np.ma.masked_array(yvals, mask=~mask)
             # tax.plot(xvals, masked_data, "ko", fillstyle="none", ms=10, label="Not used in fit")
 
             result = op.minimize(nll, fitted_line.parameters, args=(yvals, fitted_line, covs, intinfo, xvals))
             nparams = result["x"]
+            # print(nparams)
             fitted_line = models.Linear1D(slope=nparams[0], intercept=nparams[1])
-            x = np.arange(xlim[0], xlim[1], 0.01)
             tax.plot(x, fitted_line(x), "k--", label=f"Fit: {nparams[1]:.2f} + {nparams[0]:.2f}x")
 
             tax.set_ylim(ylim)
