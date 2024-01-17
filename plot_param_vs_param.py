@@ -165,9 +165,9 @@ if __name__ == "__main__":
         pi = [0, 1, 2, 3]
         xplabels = ["$A(V)$", "$C_2$", "$B_3$", "$C_4$"]
         xptags = ["AV", "C2", "B3", "C4"]
-        yplabels = ["$N(HI)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]",
+        yplabels = ["$N(HI)/A(V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]",
                     "$N(HI)/A(V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]"]
-        yptags = ["NHI", "NHI_AV", "NHI_AV", "NHI_AV"]
+        yptags = ["NHI_AV", "NHI_AV", "NHI_AV", "NHI_AV"]
         fitlines = [False, True, True, True]
     elif args.ebv:
         ostr = "ebv"
@@ -286,33 +286,38 @@ if __name__ == "__main__":
                 covs[k, 1, 1] = yvals_unc[k]
 
                 if not np.all(np.linalg.eigvals(covs[k, :, :]) > 0):
+                    print("eigvals")
+                    print(xptags[i], yptags[i])
                     print(k, np.all(np.linalg.eigvals(covs[k, :, :]) > 0))
                     print(covs[k, :, :])
 
                 if np.linalg.cond(covs[k, :, :]) > 1/sys.float_info.epsilon:
+                    print("cond")
+                    print(xptags[i], yptags[i])
                     print(k, np.all(np.linalg.cond(covs[k, :, :])))
                     print(covs[k, :, :])         
             xlim = tax.get_xlim()
             ylim = tax.get_ylim()
             dxlim = xlim[1] - xlim[0]
-            intinfo = [xlim[0] - dxlim, xlim[1] + dxlim, dxlim/100]
+            intinfo = [xlim[0] - dxlim, xlim[1] + dxlim, dxlim/20]
 
             def nll(*args):
                 return -lnlike_correlated(*args)
 
             x = np.arange(xlim[0], xlim[1], 0.01)
-            line_orig = models.Linear1D(slope=1.0, intercept=0.0)
+            line_orig = models.Linear1D(slope=-10., intercept=20.)
             fit = fitting.LinearLSQFitter()
             or_fit = fitting.FittingWithOutlierRemoval(fit, sigma_clip, niter=3, sigma=3.0)
             fitted_line= fit(line_orig, xvals, yvals, weights=1/yvals_unc)
             nparams = fitted_line.parameters
-            # tax.plot(x, fitted_line(x), "k:", label=f"Fit: {nparams[1]:.2f} + {nparams[0]:.2f}x")
+            #tax.plot(x, fitted_line(x), "k:", label=f"Fit: {nparams[1]:.2f} + {nparams[0]:.2f}x")
 
-            # fitted_line, mask = or_fit(line_orig, xvals, yvals, weights=1/yvals_unc)
+            #fitted_line, mask = or_fit(fitted_line, xvals, yvals, weights=1/yvals_unc)
             # print(fitted_line.parameters)
 
-            # masked_data = np.ma.masked_array(yvals, mask=~mask)
-            # tax.plot(xvals, masked_data, "ko", fillstyle="none", ms=10, label="Not used in fit")
+            #masked_data = np.ma.masked_array(yvals, mask=~mask)
+            #print(xvals[mask])
+            #tax.plot(xvals, masked_data, "ko", fillstyle="none", ms=10, label="Not used in fit")
 
             result = op.minimize(nll, fitted_line.parameters, args=(yvals, fitted_line, covs, intinfo, xvals))
             nparams = result["x"]
