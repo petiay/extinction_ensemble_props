@@ -128,7 +128,8 @@ if __name__ == "__main__":
         pi = [0, 1, 3, 4, 2, 5]
 
     # default values
-    yplabels = ["$C_1$", "$C_2$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$"]
+    yplabels = ["$C_1$ = UV intercept", "$C_2$ = UV slope", "$B_3$ = bump amplitude",
+                "$C_4$ = FUV rise amplitude", "$x_o$ = bump center", r"$\gamma$ = bump width"]
     yptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
     fitlines = [False] * (nrows * ncols)
     show_gd = None
@@ -170,7 +171,7 @@ if __name__ == "__main__":
         nrows = 2
         ncols = 2
         pi = [0, 1, 2, 3]
-        xplabels = ["$A(V)$", "$C_2$", "$B_3$", "$C_4$"]
+        xplabels = ["$A(V)$", "$C_2$ = UV slope", "$B_3$ = bump amplitude", "$C_4$ = FUV rise amplitude"]
         xptags = ["AV", "C2", "B3", "C4"]
         yplabels = ["$N(HI)/A(V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]",
                     "$N(HI)/A(V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]"]
@@ -208,16 +209,21 @@ if __name__ == "__main__":
         ncols = 2
         pi = [0, 1, 2, 3]
         fitlines = [True] * nrows * ncols
-        xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_4$"]
+        xplabels = ["$C_2$ = UV slope", "$C_2$ = UV slope", "$C_2$ = UV slope", "$C_4$ = FUV rise amplitude"]
         xptags = ["C2", "C2", "C2", "C4"]
-        yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$B_3 = C_3/\gamma^2$"]
+        yplabels = ["$C_1$ = UV intercept", "$B_3$ = bump amplitude", "$C_4$ = FUV rise amplitude",
+                    "$B_3$ = bump amplitude"]
         yptags = ["C1", "B3", "C4", "B3"]
     else:  # plot fm90 vs fm90
         ostr = "fm90"
-        xplabels = ["$C_2$", "$C_2$", "$C_2$", "$C_2$", "$B_3$", "$x_0$"] #, "$C_4$"]
-        xptags = ["C2", "C2", "C2", "C2", "B3", "x0"]   # , "C4"]
-        yplabels = ["$C_1$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_0$", r"$\gamma$", "$\gamma$"]   # , "$B_3 = C_3/\gamma^2$"]
-        yptags = ["C1", "B3", "C4", "x0", "gamma", "gamma"]  # , "B3"]
+        xplabels = ["$C_2$ = UV slope", "$C_2$ = UV slope", "$C_2$ = UV slope", "$C_2$ = UV slope",
+                    "$B_3$ = bump amplitude", "$x_o$ = bump center [$\mu$m$^{-1}$]"]
+        xptags = ["C2", "C2", "C2", "C2", "B3", "x0"]
+        yplabels = ["$C_1$ = UV intercept", "$B_3$ = bump amplitude",
+                    "$C_4$ = FUV rise amplitude", "$x_0$ = bump center [$\mu$m$^{-1}$]",
+                    r"$\gamma$ = bump width [$\mu$m$^{-1}$]",
+                    "$\gamma$ = bump width [$\mu$m$^{-1}$]"]
+        yptags = ["C1", "B3", "C4", "x0", "gamma", "gamma"]
 
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=fsize)
 
@@ -307,10 +313,10 @@ if __name__ == "__main__":
             covs = np.zeros((npts, 2, 2))
             covs2 = np.zeros((npts, 2, 2))
             for k in range(npts):
-                covs[k, 0, 0] = xvals_unc[k]
+                covs[k, 0, 0] = xvals_unc[k] ** 2
                 covs[k, 0, 1] = 0.0
                 covs[k, 1, 0] = 0.0
-                covs[k, 1, 1] = yvals_unc[k]
+                covs[k, 1, 1] = yvals_unc[k] ** 2
 
                 if not np.all(np.linalg.eigvals(covs[k, :, :]) > 0):
                     print("eigvals")
