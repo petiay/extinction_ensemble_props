@@ -56,6 +56,7 @@ if __name__ == "__main__":
     # get the data to plot
     allnames = []
     alldata = []
+    summarystats = {}
     for cset in args.datasets:
         fname = f"data/{cset}_ensemble_params.dat"
         allnames.append(cset)
@@ -95,12 +96,15 @@ if __name__ == "__main__":
 
         alldata.append(tdata)
 
+        summarystats[cset] = {}
         if args.showstats:
             print(f"Summary statistics for {cset}")
-            for ccol in tdata.colnames:
-                if ("name" not in ccol.lower()) & ("unc" not in ccol.lower()):
-                    ave = np.average(tdata[ccol].data)
-                    std = np.std(tdata[ccol].data)
+        for ccol in tdata.colnames:
+            if ("name" not in ccol.lower()) & ("unc" not in ccol.lower()):
+                ave = np.average(tdata[ccol].data)
+                std = np.std(tdata[ccol].data)
+                summarystats[cset][ccol] = (ave, std)
+                if args.showstats:
                     print(f"{ccol}: ave = {ave} +/- {std}")
 
     # make the plots
@@ -127,6 +131,7 @@ if __name__ == "__main__":
     yplabels = ["$C_1$", "$C_2$", "$B_3 = C_3/\gamma^2$", "$C_4$", "$x_o$", r"$\gamma$"]
     yptags = ["C1", "C2", "B3", "C4", "x0", "gamma"]
     fitlines = [False] * (nrows * ncols)
+    show_gd = None
     if args.sprops:
         ostr = "sprops"
         fsize = (12, 10)
@@ -139,24 +144,26 @@ if __name__ == "__main__":
         yptags = ["RV", "RV", "NHI_EBV", "NHI_AV"]
     elif args.spropsebv:
         ostr = "sprops_ebv"
-        fsize = (12, 6)
+        fsize = (14, 6)
         nrows = 1
         ncols = 2
         pi = [0, 1]
         xplabels = ["$E(B-V)$", "$E(B-V)$"]
         xptags = ["EBV", "EBV"]
-        yplabels = ["$R(V)$", "$N(HI)/E(B-V)$ [$10^{21}$]"]
-        yptags = ["RV", "NHI_EBV"]
+        yplabels = ["$R(V)$", "$N(HI)$ [$10^{21}$]"]
+        yptags = ["RV", "NHI"]
+        show_gd = [False, True]
     elif args.spropsav:
         ostr = "sprops_av"
-        fsize = (12, 6)
+        fsize = (14, 6)
         nrows = 1
         ncols = 2
         pi = [0, 1]
         xplabels = ["$A(V)$", "$A(V)$"]
         xptags = ["AV", "AV"]
-        yplabels = ["$R(V)$", "$N(HI)/A(V)$ [$10^{21}$]"]
-        yptags = ["RV", "NHI_AV"]
+        yplabels = ["$R(V)$", "$N(HI)$ [$10^{21}$]"]
+        yptags = ["RV", "NHI"]
+        show_gd = [False, True]
     elif args.gdprops:
         ostr = "gdprops"
         fsize = (12, 10)
@@ -220,9 +227,11 @@ if __name__ == "__main__":
         yvals = []
         yvals_unc = []
         for cname, cdata in zip(allnames, alldata):
-            ptype, palpha, plabel = ptypes[cname]
+            ptype, palpha, clabel = ptypes[cname]
             if i > 0:
                 plabel = None
+            else:
+                plabel = clabel
 
             xdata = cdata[xptags[i]].data
             ydata = cdata[yptags[i]].data
@@ -267,6 +276,24 @@ if __name__ == "__main__":
                 label=plabel,
                 alpha=palpha,
             )
+
+            # special code to fit for the gas-to-dust ratio
+            if (xptags[i] in ["EBV", "AV"]) & (yptags[i] == "NHI") & (show_gd is not None):
+
+                if show_gd[i] & (len(xdata) > 10):
+                    xlim = tax.get_xlim()
+                    ylim = tax.get_ylim()
+                    x = np.arange(0.0, xlim[1], 0.01)
+                    gdratio = summarystats[cname][f"NHI_{xptags[i]}"][0]
+                    line_orig = models.Linear1D(slope=gdratio, intercept=0.0)
+                    tax.plot(x, line_orig(x), linestyle=":", label=f"$N(HI)$/{xplabels[i]} = {gdratio:.2f}: {clabel}", color=colstr)
+                    tax.legend(fontsize=0.7*fontsize, loc="upper right")
+                if show_gd[i] & (cname == allnames[-1]):
+                    tax.set_ylim(ylim)
+                    # temp hack for SMC UV paper
+                    if xptags[i] == "AV":
+                        tax.set_xlim(xlim[0], 3.5)
+                        tax.set_ylim(ylim[0], 20.)
 
         tax.set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
         tax.set_ylabel(yplabels[i], fontsize=1.3 * fontsize)
