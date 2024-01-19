@@ -4,11 +4,20 @@ from astropy.table import QTable
 files = ["gor09", "gor03_lmc", "gor24_smc_nolowebv"]
 # files = ["gor09"]
 
+c1 = []
 c2 = []
 b3 = []
+gamma = []
 c4 = []
 rv = []
 nhiebv = []
+c1_unc = []
+c2_unc = []
+b3_unc = []
+gamma_unc = []
+c4_unc = []
+rv_unc = []
+nhiebv_unc = []
 for cfile in files:
 
     itab = QTable.read(f"data/{cfile}_ensemble_params.dat", format="ascii.ipac")
@@ -19,25 +28,47 @@ for cfile in files:
         if "C3_unc" in itab.colnames:
             itab["B3_unc"] = np.absolute(itab["B3"]) * np.sqrt(itab["C3_unc"] ** 2 +  2.0 * (itab["gamma_unc"].value ** 2))
 
+    c1 = np.concatenate((c1, itab["C1"].data))
+    c1_unc = np.concatenate((c1_unc, itab["C1_unc"].data))
     c2 = np.concatenate((c2, itab["C2"].data))
+    c2_unc = np.concatenate((c2_unc, itab["C2_unc"].data))
     b3 = np.concatenate((b3, itab["B3"].data))
+    b3_unc = np.concatenate((b3_unc, itab["B3_unc"].data))
+    gamma = np.concatenate((gamma, itab["gamma"].data))
+    gamma_unc = np.concatenate((gamma_unc, itab["gamma_unc"].data))
     c4 = np.concatenate((c4, itab["C4"].data))
+    c4_unc = np.concatenate((c4_unc, itab["C4_unc"].data))
     rv = np.concatenate((rv, itab["RV"].data))
-    nhiebv = np.concatenate((nhiebv, itab["NHI"].data / itab["EBV"].data))
+    rv_unc = np.concatenate((rv_unc, itab["RV_unc"].data))
+    tval = itab["NHI"].data / itab["EBV"].data
+    nhiebv = np.concatenate((nhiebv, tval))
+    tunc = tval * np.sqrt((itab["NHI_unc"].data / itab["NHI"].data)**2 
+                          + (np.array(itab["EBV_unc"].data) / itab["EBV"].data)**2)
+    nhiebv_unc = np.concatenate((nhiebv_unc, itab["NHI"].data / itab["EBV"].data))
 
-
+# for use in this program
 npts = len(c2)
 # X is your data table, where the features (bump strength, C2, B3, etc) are columns and 
 # individual sightlines are rows
-X = np.zeros((npts, 5))
-#X[:, 0] = itab["C1"]
-X[:, 0] = c2
-X[:, 1] = b3
-X[:, 2] = c4
-X[:, 3] = rv
-X[:, 4] = nhiebv
+X = np.zeros((npts, 14))
+X[:, 0] = c1
+X[:, 1] = c2
+X[:, 2] = b3
+X[:, 3] = gamma
+X[:, 4] = c4
+X[:, 5] = rv
+X[:, 6] = nhiebv
+X[:, 7] = c1_unc
+X[:, 8] = c2_unc
+X[:, 9] = b3_unc
+X[:, 10] = gamma_unc
+X[:, 11] = c4_unc
+X[:, 12] = rv_unc
+X[:, 13] = nhiebv_unc
 
 np.save("pca_input.dat", X)
+
+X = X[:, 0:7]
 
 N_sightlines, N_features = X.shape
 
