@@ -9,7 +9,7 @@ if __name__ == "__main__":
         help="give the datasets to plot",
         nargs="+",
         default=["val04", "gor03_smc", "gor03_lmc"],
-        choices=["val04", "gor03_smc", "gor03_lmc", "gor24_smc", "gor24_smc_forecor", "m31", "m33"],
+        choices=["val04", "gor03_smc", "gor03_lmc", "gor24_smc", "gor24_smc_forecor", "m31", "m33", "cla15"],
     )
     parser.add_argument("--av", help="plot versus A(V)", action="store_true")
     parser.add_argument("--rv", help="plot versus R(V)", action="store_true")
@@ -47,8 +47,10 @@ if __name__ == "__main__":
               "gor03_lmc": ("c^", 0.5),
               "gor24_smc": ("r>", 0.2),
               "gor24_smc_forecor": ("g<", 0.5),
-              "m31": ("mo", 0.8),
-              "m33": ("yo", 0.9)}
+              "m31": ("yD", 0.8),
+              "m33": ("mo", 0.9),
+              "cla15": ("rd", 0.8)
+              }
 
     for cname, cdata in zip(allnames, alldata):
         if args.rv:
@@ -64,7 +66,16 @@ if __name__ == "__main__":
         ptype, palpha = ptypes[cname]
         for i in range(6):
             px, py = divmod(pi[i], 3)
-            ax[px, py].plot(xdata, cdata[ptags[i]], ptype, label=cname, alpha=palpha)
+
+            if "C3" in ptags[i]:
+                # print("c3", cdata[yptags[i]])
+                # print("g**2", cdata[yptags[4]] ** 2)
+                c3g2 = cdata[ptags[i]] / (cdata[yptags[4]] ** 2)
+                ax[px, py].plot(
+                    cdata[xptags[i]], c3g2, ptype, label=cname, alpha=palpha
+                )
+            else:
+                ax[px, py].plot(xdata, cdata[ptags[i]], ptype, label=cname, alpha=palpha)
 
     for i in range(6):
         px, py = divmod(pi[i], 3)
