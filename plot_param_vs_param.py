@@ -8,6 +8,7 @@ from astropy.modeling import models, fitting
 from astropy.stats import sigma_clip
 
 from utils.fit_full2dcor import lnlike_correlated
+from utils.plot_cov_ellipses import draw_ellipses
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -232,6 +233,8 @@ if __name__ == "__main__":
         xvals_unc = []
         yvals = []
         yvals_unc = []
+        ebv = []
+        ebv_unc = []
         for cname, cdata in zip(allnames, alldata):
             ptype, palpha, clabel = ptypes[cname]
             if i > 0:
@@ -261,6 +264,10 @@ if __name__ == "__main__":
             if args.nouncs & (len(cdata[xptags[i]]) > 50):
                 xdata_unc = None
                 ydata_unc = None
+
+            # for covariances
+            ebv = np.concatenate((ebv, cdata["EBV"].data))
+            ebv_unc = np.concatenate((ebv_unc, cdata["EBV_unc"].data))
 
             colstr = ptype[0]
             symstr = ptype[1]
@@ -306,29 +313,44 @@ if __name__ == "__main__":
         if yptags[i] in ["NHI_EBV", "NHI_AV"]:
             tax.set_yscale("log")
 
+        # now fit a line to the data
+        npts = len(xvals)
+        covs = np.zeros((npts, 2, 2))
+
+        # needed for plotting and fitting
+        covtags = ["C1", "C2", "B3", "C4"]
+        for k in range(npts):
+            #if (xptags[i] in covtags) & (yptags[i] in covtags):
+            #    # approximation following Gordon et al. (2023)
+            #    cov_xy = xvals[k] * yvals[k] * ((ebv_unc[k] / ebv[k]) ** 2)
+            #    corr_xy = np.min([cov_xy / (xvals_unc[k] * yvals_unc[k]), 0.99])
+            #    cov_xy *= xvals_unc[k] * yvals_unc[k]
+            #else:
+            #    cov_xy = 0.0
+            cov_xy = 0.0
+            covs[k, 0, 0] = xvals_unc[k] ** 2
+            covs[k, 0, 1] = cov_xy
+            covs[k, 1, 0] = cov_xy
+            covs[k, 1, 1] = yvals_unc[k] ** 2
+
+            if not np.all(np.linalg.eigvals(covs[k, :, :]) > 0):
+                print("eigvals")
+                print(xptags[i], yptags[i])
+                print(k, np.all(np.linalg.eigvals(covs[k, :, :]) > 0))
+                print(covs[k, :, :])
+
+            if np.linalg.cond(covs[k, :, :]) > 1/sys.float_info.epsilon:
+                print("cond")
+                print(xptags[i], yptags[i])
+                print(k, np.all(np.linalg.cond(covs[k, :, :])))
+                print(covs[k, :, :])   
+
+        #draw_ellipses(
+        #    tax, xvals, yvals, covs, color="black", alpha=0.1
+        #)
+
         if fitlines[i] & args.fit:
-
-            # now fit a line to the data
-            npts = len(xvals)
-            covs = np.zeros((npts, 2, 2))
-            covs2 = np.zeros((npts, 2, 2))
-            for k in range(npts):
-                covs[k, 0, 0] = xvals_unc[k] ** 2
-                covs[k, 0, 1] = 0.0
-                covs[k, 1, 0] = 0.0
-                covs[k, 1, 1] = yvals_unc[k] ** 2
-
-                if not np.all(np.linalg.eigvals(covs[k, :, :]) > 0):
-                    print("eigvals")
-                    print(xptags[i], yptags[i])
-                    print(k, np.all(np.linalg.eigvals(covs[k, :, :]) > 0))
-                    print(covs[k, :, :])
-
-                if np.linalg.cond(covs[k, :, :]) > 1/sys.float_info.epsilon:
-                    print("cond")
-                    print(xptags[i], yptags[i])
-                    print(k, np.all(np.linalg.cond(covs[k, :, :])))
-                    print(covs[k, :, :])         
+      
             xlim = tax.get_xlim()
             ylim = tax.get_ylim()
             dxlim = xlim[1] - xlim[0]
