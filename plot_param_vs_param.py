@@ -142,7 +142,7 @@ if __name__ == "__main__":
         pi = [0, 1, 2, 3]
         xplabels = ["$E(B-V)$", "$A(V)$", "$E(B-V)$", "$A(V)$"]
         xptags = ["EBV", "AV", "EBV", "AV"]
-        yplabels = ["$R(V)$", "$R(V)$", "$N(HI)/E(B-V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]"]
+        yplabels = ["$R(V)$", "$R(V)$", "$N(HI)/E(B-V)$ [$10^{21}~H~cm^{-2}~mag^{-1}$]", "$N(HI)/A(V)$ [$10^{21}~H~cm^{-2}~H~cm^{-2}~mag^{-1}$]"]
         yptags = ["RV", "RV", "NHI_EBV", "NHI_AV"]
     elif args.spropsebv:
         ostr = "sprops_ebv"
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         pi = [0, 1]
         xplabels = ["$E(B-V)$", "$E(B-V)$"]
         xptags = ["EBV", "EBV"]
-        yplabels = ["$R(V)$", "$N(HI)$ [$10^{21}$]"]
+        yplabels = ["$R(V)$", "$N(HI)$ [$10^{21}~H~cm^{-2}$]"]
         yptags = ["RV", "NHI"]
         show_gd = [False, True]
     elif args.spropsav:
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         pi = [0, 1]
         xplabels = ["$A(V)$", "$A(V)$"]
         xptags = ["AV", "AV"]
-        yplabels = ["$R(V)$", "$N(HI)$ [$10^{21}$]"]
+        yplabels = ["$R(V)$", "$N(HI)$ [$10^{21}~H~cm^{-2}$]"]
         yptags = ["RV", "NHI"]
         show_gd = [False, True]
     elif args.gdprops:
@@ -174,8 +174,8 @@ if __name__ == "__main__":
         pi = [0, 1, 2, 3]
         xplabels = ["$A(V)$", "$C_2$ = UV slope", "$B_3$ = bump amplitude", "$C_4$ = FUV rise amplitude"]
         xptags = ["AV", "C2", "B3", "C4"]
-        yplabels = ["$N(HI)/A(V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]",
-                    "$N(HI)/A(V)$ [$10^{21}$]", "$N(HI)/A(V)$ [$10^{21}$]"]
+        yplabels = ["$N(HI)/A(V)$ [$10^{21}~H~cm^{-2}~mag^{-1}$]", "$N(HI)/A(V)$ [$10^{21}~H~cm^{-2}~mag^{-1}$]",
+                    "$N(HI)/A(V)$ [$10^{21}~H~cm^{-2}~mag^{-1}$]", "$N(HI)/A(V)$ [$10^{21}~H~cm^{-2}~mag^{-1}$]"]
         yptags = ["NHI_AV", "NHI_AV", "NHI_AV", "NHI_AV"]
         fitlines = [False, True, True, True]
     elif args.ebv:
