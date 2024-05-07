@@ -104,7 +104,7 @@ if __name__ == "__main__":
             if ("name" not in ccol.lower()) & ("unc" not in ccol.lower()):
                 ave = np.average(tdata[ccol].data)
                 std = np.std(tdata[ccol].data)
-                summarystats[cset][ccol] = (ave, std)
+                summarystats[cset][ccol] = (ave, std, std/np.sqrt(len(tdata[ccol].data)))
                 if args.showstats:
                     print(f"{ccol}: ave = {ave} +/- {std}")
 
@@ -298,15 +298,16 @@ if __name__ == "__main__":
                     ylim = tax.get_ylim()
                     x = np.arange(0.0, xlim[1], 0.01)
                     gdratio = summarystats[cname][f"NHI_{xptags[i]}"][0]
+                    gdratio_unc = summarystats[cname][f"NHI_{xptags[i]}"][2]
                     line_orig = models.Linear1D(slope=gdratio, intercept=0.0)
-                    tax.plot(x, line_orig(x), linestyle=":", label=f"$N(HI)$/{xplabels[i]} = {gdratio:.2f}: {clabel}", color=colstr)
+                    tax.plot(x, line_orig(x), linestyle=":", label=f"$N(HI)/{xplabels[i]} = {gdratio:.2f} \pm {gdratio_unc:.2f}$: {clabel}", color=colstr)
                     tax.legend(fontsize=0.7*fontsize, loc="upper right")
                 if show_gd[i] & (cname == allnames[-1]):
                     tax.set_ylim(ylim)
                     # temp hack for SMC UV paper
                     if xptags[i] == "AV":
                         tax.set_xlim(xlim[0], 3.5)
-                        tax.set_ylim(ylim[0], 20.)
+                        tax.set_ylim(ylim[0], 22.)
 
         tax.set_xlabel(xplabels[i], fontsize=1.3 * fontsize)
         tax.set_ylabel(yplabels[i], fontsize=1.3 * fontsize)
