@@ -68,7 +68,7 @@ X[:, 13] = nhiebv_unc
 
 np.save("pca_input.dat", X)
 
-X = X[:, 0:7]
+X = X[:, 1:7]
 
 N_sightlines, N_features = X.shape
 
@@ -78,6 +78,8 @@ X_norm = (X - X.mean(axis=0)) / X.std(axis=0)
 # compute covariance matrix between features; note that "@" is matrix multiply
 # cov_X.shape should equal (N_features, N_features)
 cov_X = np.cov(X_norm.transpose())
+
+print(cov_X)
 
 # decompose covariance matrix into eigenvalues/eigenvectors
 # eigenvalues_X.shape should equal (N_features,)
