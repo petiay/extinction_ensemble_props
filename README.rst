@@ -38,3 +38,9 @@ Plots
 
 plot_param_vs_param: plot combination of FM90 parameters E(B-V), A(V), E(B-V),
   N(HI), N(HI)/E(B-V), etc. versus each other depending on commandline parameters
+
+
+Data
+----
+
+Includes literature data and options for plotting one, two, or many datasets.
