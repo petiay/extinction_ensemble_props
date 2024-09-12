@@ -16,9 +16,8 @@ if __name__ == "__main__":
         "--datasets",
         help="give the datasets to plot",
         nargs="+",
-        default=["val04", "fit07", "gor09"],
-        choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor09", "gor24_smc",
-                 "gor24_smc_nobump", "gor24_smc_bump", "gor24_smc_flat", "gor24_smc_lowebv"],
+        default=["gor09", "gor03_lmc", "gor24_smc"],
+        choices=["val04", "gor03_smc", "gor03_lmc", "fit07", "gor09", "gor24_smc"],
     )
     parser.add_argument("--sprops", help="sample properties", action="store_true")
     parser.add_argument("--spropsebv", help="sample properties versus ebv", action="store_true")
@@ -334,17 +333,17 @@ if __name__ == "__main__":
             covs[k, 1, 0] = cov_xy
             covs[k, 1, 1] = yvals_unc[k] ** 2
 
-            if not np.all(np.linalg.eigvals(covs[k, :, :]) > 0):
-                print("eigvals")
-                print(xptags[i], yptags[i])
-                print(k, np.all(np.linalg.eigvals(covs[k, :, :]) > 0))
-                print(covs[k, :, :])
+            # if not np.all(np.linalg.eigvals(covs[k, :, :]) > 0):
+            #     print("eigvals")
+            #     print(xptags[i], yptags[i])
+            #     print(k, np.all(np.linalg.eigvals(covs[k, :, :]) > 0))
+            #     print(covs[k, :, :])
 
-            if np.linalg.cond(covs[k, :, :]) > 1/sys.float_info.epsilon:
-                print("cond")
-                print(xptags[i], yptags[i])
-                print(k, np.all(np.linalg.cond(covs[k, :, :])))
-                print(covs[k, :, :])   
+            # if np.linalg.cond(covs[k, :, :]) > 1/sys.float_info.epsilon:
+            #     print("cond")
+            #     print(xptags[i], yptags[i])
+            #     print(k, np.all(np.linalg.cond(covs[k, :, :])))
+            #     print(covs[k, :, :])   
 
         #draw_ellipses(
         #    tax, xvals, yvals, covs, color="black", alpha=0.1
